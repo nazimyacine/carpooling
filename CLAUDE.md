@@ -124,6 +124,7 @@ Validation à la publication d'un trajet : date de départ dans le futur, villes
 - En cas de conflit : ne jamais écraser le travail d'un autre (pas de `git push --force`, pas de résolution qui jette ses modifications sans vérifier). Signaler le conflit et le résoudre fichier par fichier.
 - Scripts Flyway : avant d'en créer un, vérifier après un pull quel est le dernier numéro utilisé, pour que deux personnes ne créent pas le même `V<n>`.
 - Commits au format Conventional Commits : `feat(bookings): ...`, `fix(trips): ...`, `test(...)`, `docs(...)`.
+- **Ne jamais mentionner Claude** (ni aucune IA) dans ce qui est publié sur le dépôt : pas de ligne `Co-Authored-By: Claude`, pas de « Generated with Claude Code », dans les messages de commit, les tags, les descriptions ou le code.
 
 ### Définition de terminé
 
