@@ -132,7 +132,8 @@ Une tâche est terminée quand : le code compile, les tests passent en local pui
 
 ## Façon de travailler (consignes pour Claude)
 
-- **Au début de chaque session**, faire `git pull` puis lire le code existant des modules concernés (voir « Travail en équipe et Git »). Ne rien écrire avant.
+- **Au début de chaque session**, faire `git pull`, lire `docs/avancement.md` (où en est le projet, qui fait quoi, prochaine étape), puis lire le code existant des modules concernés (voir « Travail en équipe et Git »). Ne rien écrire avant.
+- **À la fin de chaque étape**, mettre à jour `docs/avancement.md` (état, qui, notes, section « Où on en est ») dans le même commit que le travail.
 - **Avant de coder**, demander les fichiers et informations nécessaires plutôt que de coder sur des hypothèses. Rassembler le contexte d'abord, coder une seule fois.
 - **Avancer par petites étapes**, avec un commit à chaque étape. Ne pas tout livrer d'un bloc.
 - **Un fichier à la fois** : après chaque fichier, indiquer une commande de contrôle à lancer (compilation, test...) et attendre le retour avant de passer au suivant.
