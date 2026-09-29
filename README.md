@@ -1,4 +1,4 @@
-# Roulons : application de covoiturage
+# PoolUp : application de covoiturage
 
 Projet de software engineering, ESILV. Équipe de 4 personnes, 4 semaines.
 
