@@ -7,8 +7,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 ## Où on en est
 
-- **Dernière étape faite** : 0.2 (démarrage vérifié en local le 02/10/2026 : PostgreSQL 16 healthy, Spring Boot démarré, réponse HTTP 401 attendue avec Spring Security)
-- **Prochaine étape** : 1.1 (schéma Flyway : les 7 tables et leurs contraintes)
+- **Dernière étape faite** : 1.1 (schéma des 7 tables appliqué par Flyway et contraintes vérifiées sur PostgreSQL 16 le 02/10/2026 ; validation CI encore en attente)
+- **Prochaine étape** : 1.2 (liste des villes avec coordonnées dans `V2__cities.sql`)
 - **Points bloquants** : aucun
 
 ## Phase 0 : socle technique
@@ -26,9 +26,21 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
-| 1.1 | `V1__schema.sql` : les 7 tables et toutes les contraintes du CLAUDE.md | [ ] | | Bloque tous les modules : à faire en priorité |
+| 1.1 | `V1__schema.sql` : les 7 tables et toutes les contraintes du CLAUDE.md | [~] | Équipe | Migration V1 appliquée sur PostgreSQL 16, démarrage Spring Boot et `mvnw verify` réussis. Script SQL : 25 refus attendus et cas valides vérifiés ; automatisation Testcontainers (0.3) et CI (0.4) restantes |
 | 1.2 | `V2__cities.sql` : liste des villes avec coordonnées | [ ] | | |
 | 1.3 | Jeu de données de démo, séparé des scripts de schéma | [ ] | | Mieux après les modules auth + trips |
+
+### Vérification du schéma (1.1)
+
+Le script `backend/src/test/resources/db/schema_assertions.sql` vérifie les contraintes de places, prix, statuts, coordonnées, unicité des emails, réservations confirmées et notes, ainsi que le refus de se noter soi-même. Il vérifie aussi qu'une réservation annulée permet une nouvelle réservation confirmée. Les données de test sont annulées par `ROLLBACK` ; lancer sur une base de développement.
+
+Après le démarrage du backend (qui applique Flyway), depuis la racine du dépôt, sous PowerShell :
+
+```powershell
+Get-Content -Raw -Encoding UTF8 backend/src/test/resources/db/schema_assertions.sql | docker compose exec -T db psql -U poolup -d poolup -v ON_ERROR_STOP=1
+```
+
+Cette vérification SQL est lancée séparément de `mvnw verify` : aucun test Java n'est encore présent. Les contrôles métier entre plusieurs tables (participants, droits, trajet terminé) restent à implémenter dans les services. `reports.target_id` n'a pas de clé étrangère car la table cible dépend de `target_type` ; le service admin devra vérifier la cible.
 
 ## Phase 2 : comptes
 
