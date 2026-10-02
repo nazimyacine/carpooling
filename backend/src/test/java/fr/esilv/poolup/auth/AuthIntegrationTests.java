@@ -185,9 +185,8 @@ class AuthIntegrationTests {
         userRepository.save(admin);
         String adminToken = tokenOf(login(adminEmail, PASSWORD));
 
-        // Security lets the admin through; 404 only because no admin endpoint exists yet (step 3.7)
         mockMvc.perform(get("/api/admin/reports").header(HttpHeaders.AUTHORIZATION, "Bearer " + adminToken))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk());
     }
 
     private ResultActions register(String email, String password) throws Exception {

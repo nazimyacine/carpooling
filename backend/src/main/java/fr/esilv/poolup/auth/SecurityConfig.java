@@ -25,8 +25,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -34,6 +41,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
+
+import fr.esilv.poolup.users.UserRepository;
+import fr.esilv.poolup.users.UserStatus;
 
 /**
  * Stateless API: every request carries its JWT in {@code Authorization: Bearer ...},
@@ -98,9 +108,29 @@ public class SecurityConfig {
         return new NimbusJwtEncoder(new ImmutableSecret<>(jwtKey));
     }
 
+    /**
+     * Signature and expiry, then the account must still be ACTIVE: a token issued before a suspension
+     * is refused (401) at the next request instead of staying valid until it expires.
+     */
     @Bean
-    JwtDecoder jwtDecoder() {
-        return NimbusJwtDecoder.withSecretKey(jwtKey).macAlgorithm(MacAlgorithm.HS256).build();
+    JwtDecoder jwtDecoder(UserRepository userRepository) {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtKey).macAlgorithm(MacAlgorithm.HS256).build();
+        decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
+                JwtValidators.createDefault(), activeAccountValidator(userRepository)));
+        return decoder;
+    }
+
+    private static OAuth2TokenValidator<Jwt> activeAccountValidator(UserRepository userRepository) {
+        OAuth2Error inactive = new OAuth2Error(OAuth2ErrorCodes.INVALID_TOKEN, "Compte suspendu ou supprimé.", null);
+        return jwt -> {
+            boolean active;
+            try {
+                active = userRepository.existsByIdAndStatus(Long.valueOf(jwt.getSubject()), UserStatus.ACTIVE);
+            } catch (NumberFormatException ex) {
+                active = false;
+            }
+            return active ? OAuth2TokenValidatorResult.success() : OAuth2TokenValidatorResult.failure(inactive);
+        };
     }
 
     /** The "role" claim (USER or ADMIN) becomes the authority ROLE_USER or ROLE_ADMIN. */

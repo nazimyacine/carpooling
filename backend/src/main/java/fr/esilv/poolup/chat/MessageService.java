@@ -48,13 +48,15 @@ public class MessageService {
         return MessageResponse.from(messageRepository.saveAndFlush(message));
     }
 
+    /** Rule 5: only the driver and the confirmed passengers take part in a trip discussion. */
+    public boolean canAccessTripChat(Trip trip, Long userId) {
+        return Objects.equals(trip.getDriver().getId(), userId)
+                || bookingRepository.existsByTripIdAndPassengerIdAndStatus(trip.getId(), userId,
+                        BookingStatus.CONFIRMED);
+    }
+
     private void ensureUserCanAccessTripChat(Trip trip, Long userId) {
-        if (Objects.equals(trip.getDriver().getId(), userId)) {
-            return;
-        }
-        boolean confirmedPassenger = bookingRepository.existsByTripIdAndPassengerIdAndStatus(
-                trip.getId(), userId, BookingStatus.CONFIRMED);
-        if (!confirmedPassenger) {
+        if (!canAccessTripChat(trip, userId)) {
             throw ApiException.forbidden("Vous n'avez pas accès à cette discussion.");
         }
     }
