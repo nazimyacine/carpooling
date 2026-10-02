@@ -9,9 +9,9 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 - **Dernières étapes terminées** : 1.2 (48 villes, `V2__cities.sql`) et 1.3 (données de démo, profil `demo`). `mvnw verify` réussi en local le 02/10/2026 : 11 tests
 - **Phases 0 et 1** : tout est terminé sauf 0.6 (Swagger)
-- **Dernière étape terminée** : 2.2 (`users`, profil et voiture), avec tests d’intégration `UserProfileIntegrationTests` vérifiés le 02/10/2026
-- **Prochaine étape** : 0.6 (Swagger), 2.3 (`cities`) et la phase 3 en parallèle. La phase 2 est maintenant complète jusqu’au profil utilisateur
-- **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
+- **Dernière étape implémentée** : 2.3 (`cities`) le 02/10/2026 : `GET /api/cities` et trois tests d’intégration ajoutés ; exécution à valider. Les tests de 2.2 ont été vérifiés le 02/10/2026
+- **Prochaine étape** : 0.6 (Swagger) et la phase 3 en parallèle. Tous les endpoints de la phase 2 sont implémentés ; validation des tests de 2.3 restante
+- **Points bloquants** : Java et Docker absents de l’environnement utilisé pour 2.3 : `mvnw verify` n’a pas pu démarrer. Validation CI attendue. Sur une machine avec Docker Desktop, les tests peuvent se lancer dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
 
@@ -69,7 +69,7 @@ MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock
 |-----|-------|------|-----|-------|
 | 2.1 | `auth` : inscription, connexion, JWT, BCrypt, `SecurityConfig`, compte `SUSPENDED` refusé | [x] | Nazim | `POST /api/auth/register` (201, 409 si email pris), `POST /api/auth/login` (401 identifiants faux, 403 compte suspendu), `GET /api/auth/me`. JWT HS256 via Spring OAuth2 Resource Server, valable 24 h. Entité `User`, `UserRepository`, `UserResponse` créés dans `users` (à réutiliser en 2.2). Test `AuthIntegrationTests` (9 cas) |
 | 2.2 | `users` : consulter / modifier son profil et sa voiture | [x] | Nazim | `GET /api/users/me` et `PUT /api/users/me` ajoutés, validation de `firstName` / `lastName` / `carModel`, mise à jour de la voiture et tests d’intégration `UserProfileIntegrationTests` passés |
-| 2.3 | `cities` : endpoint de liste des villes | [ ] | | |
+| 2.3 | `cities` : endpoint de liste des villes | [x] | Équipe | `GET /api/cities` (JWT requis) renvoie les villes Flyway triées par nom : `id`, `name`, `latitude`, `longitude`. Couches JPA / service en lecture seule / contrôleur, réponse DTO. `CityIntegrationTests` : contenu complet et tri, 401 sans jeton, 401 avec jeton invalide. `git diff --check` réussi ; tests non exécutés localement (Java et Docker absents), CI à confirmer ; visibilité Swagger à vérifier après 0.6 |
 
 ### Utiliser l'authentification (2.1)
 
