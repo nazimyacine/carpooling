@@ -7,9 +7,9 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 ## Où on en est
 
-- **Dernière étape faite** : 1.1 (schéma des 7 tables appliqué par Flyway et contraintes vérifiées sur PostgreSQL 16 le 02/10/2026 ; validation CI encore en attente)
+- **Dernière étape implémentée** : 0.3 (tests de démarrage sur PostgreSQL 16 et des contraintes du schéma ajoutés le 02/10/2026 ; exécution à valider)
 - **Prochaine étape** : 1.2 (liste des villes avec coordonnées dans `V2__cities.sql`)
-- **Points bloquants** : aucun
+- **Points bloquants** : Java 21 et Docker absents de l'environnement de travail du 02/10/2026 ; tests locaux non exécutés
 
 ## Phase 0 : socle technique
 
@@ -17,7 +17,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 |-----|-------|------|-----|-------|
 | 0.1 | Squelette Spring Boot 3.5.16 (Maven wrapper, Lombok, package `fr.esilv.poolup`) | [x] | Nazim | Compile. Initializr ne propose plus Boot 3 : `pom.xml` écrit à la main |
 | 0.2 | `application.properties` (connexion base, Flyway, `ddl-auto=validate`, UTC) | [~] | Nazim | Démarrage local validé le 02/10/2026 avec `docker compose up -d` et `.\mvnw.cmd spring-boot:run` : PostgreSQL healthy, application démarrée, HTTP 401 attendu. Validation CI en attente de 0.4 ; aucune migration ni entité à vérifier pour l'instant |
-| 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [ ] | | Réécrire `TestcontainersConfiguration` pour Testcontainers 1.x (Boot 3.5), image `postgres:16` |
+| 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [~] | Équipe | Configuration Testcontainers 1.x avec `postgres:16` et `@ServiceConnection`. Deux tests : contexte + migrations Flyway + 7 tables, puis contraintes via le script SQL existant. `mvnw verify` bloqué localement : Java et Docker absents ; validation CI attendue |
 | 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [ ] | | |
 | 0.5 | Module `common` : format d'erreur unique + `@RestControllerAdvice` (400/401/403/404/409) | [ ] | | |
 | 0.6 | Swagger / springdoc | [ ] | | Dépendance à ajouter (prévue dans la stack) |
@@ -40,7 +40,7 @@ Après le démarrage du backend (qui applique Flyway), depuis la racine du dép�
 Get-Content -Raw -Encoding UTF8 backend/src/test/resources/db/schema_assertions.sql | docker compose exec -T db psql -U poolup -d poolup -v ON_ERROR_STOP=1
 ```
 
-Cette vérification SQL est lancée séparément de `mvnw verify` : aucun test Java n'est encore présent. Les contrôles métier entre plusieurs tables (participants, droits, trajet terminé) restent à implémenter dans les services. `reports.target_id` n'a pas de clé étrangère car la table cible dépend de `target_type` ; le service admin devra vérifier la cible.
+Cette vérification SQL est aussi exécutée automatiquement par `PoolupApplicationTests.schemaConstraintsRejectInvalidData` lors de `cd backend && ./mvnw verify`, sur un conteneur PostgreSQL 16 isolé. Java 21 et Docker doivent être disponibles ; aucun démarrage préalable de Docker Compose n'est nécessaire. Les contrôles métier entre plusieurs tables (participants, droits, trajet terminé) restent à implémenter dans les services. `reports.target_id` n'a pas de clé étrangère car la table cible dépend de `target_type` ; le service admin devra vérifier la cible.
 
 ## Phase 2 : comptes
 
