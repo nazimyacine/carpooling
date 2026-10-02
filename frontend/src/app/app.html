@@ -1,0 +1,16 @@
+<header class="topbar">
+  <a class="brand" [routerLink]="auth.user() ? auth.home() : '/login'">PoolUp<span class="brand-dot">.</span></a>
+  @if (auth.user(); as user) {
+    @if (user.role === 'ADMIN') {
+      <a routerLink="/admin">Administration</a>
+    } @else {
+      <nav aria-label="Mode de déplacement" class="mode-switch">
+        <button type="button" [attr.aria-pressed]="auth.mode() === 'passenger'" (click)="switchMode('passenger')">Passager</button>
+        <button type="button" [attr.aria-pressed]="auth.mode() === 'driver'" (click)="switchMode('driver')">Conducteur</button>
+      </nav>
+    }
+    <span class="account">{{ user.firstName }}</span>
+    <button class="logout" type="button" (click)="logout()">Déconnexion</button>
+  }
+</header>
+<main><router-outlet /></main>

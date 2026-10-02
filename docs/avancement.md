@@ -8,8 +8,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 ## Où on en est
 
 - **Phases 0 et 1** : tout est terminé sauf 0.6 (Swagger)
-- **Dernière étape terminée** : 3.7 (`admin`, Etienne) le 02/10/2026, `mvnw verify` local vert (86 tests). Toute la phase 3 est faite
-- **Prochaine étape** : 0.6 (Swagger), puis phase 4 (front)
+- **Dernières étapes réalisées** : 4.1 et 4.2 le 02/10/2026 : front Angular standalone, authentification et choix du mode. Build de production et 21 tests front verts en local ; validation CI après push à confirmer. Toute la phase 3 est faite (86 tests back verts lors de 3.7)
+- **Prochaines étapes** : 0.6 (Swagger), puis 4.3 (recherche / carte / réservations) et 4.4 (espace conducteur) sur le socle front existant
 - **À corriger (3.5, `chat`)** : le WebSocket ne vérifie ni le jeton à la connexion STOMP ni l'abonnement à `/topic/trips/{id}` : n'importe quel client connecté peut lire la discussion de n'importe quel trajet. La règle 5 exige le contrôle aussi sur le WebSocket (intercepteur STOMP sur `CONNECT` et `SUBSCRIBE`, avec un test)
 - **À trancher (admin)** : masquer un trajet (aucun champ prévu, l'écran admin « Trajets » est en lecture seule), note interne sur un signalement (pas de colonne `admin_note`), signaler une note abusive (`RATING`), et que faire des trajets / réservations à venir d'un compte suspendu (rien n'est annulé automatiquement aujourd'hui)
 - **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
@@ -79,7 +79,7 @@ MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock
 - Erreurs métier dans un service : `throw ApiException.conflict("...")` (ou `badRequest`, `unauthorized`, `forbidden`, `notFound`), format commun de 0.5.
 - Tests d'intégration hors du package racine : `@Import(TestcontainersConfiguration.class)` (classe rendue `public`) ; exemple complet dans `AuthIntegrationTests` (vrais jetons, MockMvc).
 - Clé de signature : `poolup.jwt.secret` (variable `JWT_SECRET`, au moins 32 caractères ; la valeur par défaut ne sert qu'en développement). Durée : `JWT_EXPIRATION` (24 h par défaut).
-- Limite connue : un jeton déjà émis reste valable jusqu'à son expiration, même si le compte est suspendu entre-temps (à traiter si besoin en 3.7). CORS pour le front Angular à configurer en 4.1.
+- Limite connue : un jeton déjà émis reste valable jusqu'à son expiration, même si le compte est suspendu entre-temps (à traiter si besoin en 3.7). Front local : proxy Angular `/api/**` vers `localhost:8080` (4.1), donc pas de CORS nécessaire. Prévoir le relais `/api/` en production (5.1).
 - Comptes de démo (profil `demo`) : connexion avec `prenom@demo.poolup.fr` / `demo1234`.
 
 ## Phase 3 : modules métier (parallélisables une fois la phase 2 faite)
@@ -98,8 +98,8 @@ MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock
 
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
-| 4.1 | Squelette Angular, intercepteur JWT, guards (connecté, admin) | [ ] | | |
-| 4.2 | Connexion / inscription, choix du mode passager / conducteur | [ ] | | |
+| 4.1 | Squelette Angular, intercepteur JWT, guards (connecté, admin) | [x] | | Angular 21.2 standalone, TypeScript strict, routes chargées à la demande. JWT en `sessionStorage`, envoyé uniquement vers `/api/` hors login/register ; 401 privé -> déconnexion. Guards revérifiant `/api/auth/me`, rôle ADMIN issu du serveur. Proxy local vers le backend (pas de CORS nécessaire). Build production vert, tests Vitest/jsdom verts ; workflow `frontend-ci.yml` ajouté, CI après push à confirmer |
+| 4.2 | Connexion / inscription, choix du mode passager / conducteur | [x] | | `/login`, `/register` : formulaires validés, erreurs 400/401/403/409 et réseau, protection contre la double soumission. Mode choisi à la connexion/inscription, mémorisé en `localStorage`, modifiable dans le bandeau ; déconnexion ; ADMIN dirigé vers `/admin`. Interface adaptée des maquettes sous le nom PoolUp. `/passenger`, `/driver`, `/admin` sont des pages d’accueil à compléter en 4.3/4.4/4.7. 21 tests front verts au total ; CI après push à confirmer. Commandes dans `frontend/README.md` |
 | 4.3 | Passager : recherche + carte Leaflet, détail du trajet, mes réservations | [ ] | | |
 | 4.4 | Conducteur : tableau de bord, publier / modifier un trajet | [ ] | | |
 | 4.5 | Messages (client STOMP) | [ ] | | |

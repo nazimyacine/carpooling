@@ -1,0 +1,48 @@
+<div class="auth-layout">
+  <aside class="intro">
+    <p class="eyebrow">Covoiturage, tout simplement</p>
+    <h1>Le même trajet,<br>à plusieurs.</h1>
+    <p>Publiez vos trajets ou trouvez une place, puis organisez-vous directement avec le conducteur.</p>
+    <div class="road-art" aria-hidden="true"><span class="road-line"></span><span class="road-point start"></span><span class="road-point end"></span></div>
+    <p class="intro-note">Un compte. Deux façons de voyager.</p>
+  </aside>
+  <section class="auth-card" [attr.aria-labelledby]="'auth-title'">
+    <p class="eyebrow">{{ registering ? 'Inscription' : 'Connexion' }}</p>
+    <h2 id="auth-title">{{ registering ? 'Bienvenue à bord.' : 'Heureux de vous revoir.' }}</h2>
+    <p class="muted">{{ registering ? 'Créez votre compte pour voyager ensemble.' : 'Retrouvez vos trajets et vos compagnons de route.' }}</p>
+    @if (expired) { <p role="status" class="notice">Votre session a expiré. Connectez-vous à nouveau.</p> }
+    @if (error()) { <p role="alert" class="error-summary">{{ error() }}</p> }
+    <form [formGroup]="form" (ngSubmit)="submit()">
+      @if (registering) {
+        <div class="name-fields">
+          <div><label for="firstName">Prénom</label><input id="firstName" formControlName="firstName" autocomplete="given-name" maxlength="100" [attr.aria-invalid]="invalid('firstName')" aria-describedby="firstName-error">
+            @if (invalid('firstName')) { <small id="firstName-error" class="field-error">Saisissez votre prénom (100 caractères maximum).</small> }</div>
+          <div><label for="lastName">Nom</label><input id="lastName" formControlName="lastName" autocomplete="family-name" maxlength="100" [attr.aria-invalid]="invalid('lastName')" aria-describedby="lastName-error">
+            @if (invalid('lastName')) { <small id="lastName-error" class="field-error">Saisissez votre nom (100 caractères maximum).</small> }</div>
+        </div>
+      }
+      <label for="email">Adresse e-mail</label>
+      <input id="email" type="email" formControlName="email" autocomplete="email" maxlength="255" placeholder="vous@exemple.fr" [attr.aria-invalid]="invalid('email')" aria-describedby="email-error">
+      @if (invalid('email')) { <small id="email-error" class="field-error">Saisissez une adresse e-mail valide.</small> }
+      <label for="password">Mot de passe</label>
+      <input id="password" type="password" formControlName="password" [autocomplete]="registering ? 'new-password' : 'current-password'" [attr.aria-invalid]="invalid('password')" aria-describedby="password-help">
+      <small id="password-help" [class.field-error]="invalid('password')">{{ registering ? 'Entre 8 et 72 caractères.' : invalid('password') ? 'Saisissez votre mot de passe.' : '' }}</small>
+      <fieldset>
+        <legend>Aujourd'hui, je suis</legend>
+        <div class="mode-options">
+          <label class="mode-option" [class.selected]="selectedMode() === 'passenger'">
+            <input type="radio" name="travelMode" value="passenger" [checked]="selectedMode() === 'passenger'" (change)="selectedMode.set('passenger')">
+            <span><strong>Passager</strong><small>Je cherche un trajet</small></span>
+          </label>
+          <label class="mode-option" [class.selected]="selectedMode() === 'driver'">
+            <input type="radio" name="travelMode" value="driver" [checked]="selectedMode() === 'driver'" (change)="selectedMode.set('driver')">
+            <span><strong>Conducteur</strong><small>Je propose un trajet</small></span>
+          </label>
+        </div>
+      </fieldset>
+      <p class="mode-hint">Un seul compte pour les deux : vous changez de mode à tout moment depuis le bandeau.</p>
+      <button class="primary" type="submit" [disabled]="busy()">{{ busy() ? 'Veuillez patienter…' : registering ? 'Créer mon compte' : selectedMode() === 'passenger' ? 'Se connecter comme passager' : 'Se connecter comme conducteur' }}</button>
+    </form>
+    <p class="auth-footer">{{ registering ? 'Déjà un compte ?' : 'Pas encore de compte ?' }} <a [routerLink]="registering ? '/login' : '/register'">{{ registering ? 'Se connecter' : 'Créer un compte' }}</a></p>
+  </section>
+</div>
