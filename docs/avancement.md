@@ -7,9 +7,9 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 ## Où on en est
 
-- **Dernière étape implémentée** : 0.3 (tests de démarrage sur PostgreSQL 16 et des contraintes du schéma ajoutés le 02/10/2026 ; exécution à valider)
+- **Dernières étapes implémentées** : 0.3 et 0.4 (tests PostgreSQL 16 et CI GitHub Actions ajoutés le 02/10/2026 ; exécution à valider)
 - **Prochaine étape** : 1.2 (liste des villes avec coordonnées dans `V2__cities.sql`)
-- **Points bloquants** : Java 21 et Docker absents de l'environnement de travail du 02/10/2026 ; tests locaux non exécutés
+- **Points bloquants** : Java 21 et Docker absents de l'environnement de travail du 02/10/2026 ; tests locaux non exécutés. Push des étapes 0.3/0.4 refusé par GitHub (`Invalid username or token`) : commits conservés localement, authentification à rétablir avant publication et validation CI
 
 ## Phase 0 : socle technique
 
@@ -18,7 +18,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 | 0.1 | Squelette Spring Boot 3.5.16 (Maven wrapper, Lombok, package `fr.esilv.poolup`) | [x] | Nazim | Compile. Initializr ne propose plus Boot 3 : `pom.xml` écrit à la main |
 | 0.2 | `application.properties` (connexion base, Flyway, `ddl-auto=validate`, UTC) | [~] | Nazim | Démarrage local validé le 02/10/2026 avec `docker compose up -d` et `.\mvnw.cmd spring-boot:run` : PostgreSQL healthy, application démarrée, HTTP 401 attendu. Validation CI en attente de 0.4 ; aucune migration ni entité à vérifier pour l'instant |
 | 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [~] | Équipe | Configuration Testcontainers 1.x avec `postgres:16` et `@ServiceConnection`. Deux tests : contexte + migrations Flyway + 7 tables, puis contraintes via le script SQL existant. `mvnw verify` bloqué localement : Java et Docker absents ; validation CI attendue |
-| 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [ ] | | |
+| 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [~] | Équipe | Workflow `backend-ci.yml` sur chaque push et pull request : Java 21 Temurin, cache Maven, Docker du runner Ubuntu, `./mvnw --batch-mode --no-transfer-progress verify`, rapports de tests conservés. Wrapper rendu exécutable. YAML et `git diff --check` validés ; première exécution GitHub Actions à confirmer |
 | 0.5 | Module `common` : format d'erreur unique + `@RestControllerAdvice` (400/401/403/404/409) | [ ] | | |
 | 0.6 | Swagger / springdoc | [ ] | | Dépendance à ajouter (prévue dans la stack) |
 
