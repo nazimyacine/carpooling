@@ -9,8 +9,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 - **Dernières étapes terminées** : 1.2 (48 villes, `V2__cities.sql`) et 1.3 (données de démo, profil `demo`). `mvnw verify` réussi en local le 02/10/2026 : 11 tests
 - **Phases 0 et 1** : 0.1 à 0.4 et 1.1 à 1.3 terminées ; CI GitHub Actions verte sur `main` (dernier run sur `577344f`, vérifié le 02/10/2026). Restent 0.5 (format d'erreur commun) et 0.6 (Swagger)
-- **En cours** : 2.1 (`auth`, Nazim)
-- **Prochaine étape** : 0.5 et 0.6 (libres), puis 2.2 et 2.3
+- **En cours** : 0.5 puis 2.1 (`auth`), Nazim
+- **Prochaine étape** : 0.6 (libre), puis 2.2 et 2.3
 - **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
@@ -21,7 +21,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 | 0.2 | `application.properties` (connexion base, Flyway, `ddl-auto=validate`, UTC) | [x] | Nazim | Démarrage local validé le 02/10/2026 (`docker compose up -d` puis `.\mvnw.cmd spring-boot:run`, HTTP 401 attendu). Flyway applique les migrations au démarrage ; CI verte. `ddl-auto=validate` vérifiera les entités dès qu'il y en aura |
 | 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [x] | Équipe | Configuration Testcontainers 1.x avec `postgres:16` et `@ServiceConnection`. Tests : contexte + migrations Flyway + 7 tables, villes chargées, contraintes via le script SQL existant. CI verte |
 | 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [x] | Équipe | Workflow `backend-ci.yml` sur chaque push et pull request : Java 21 Temurin, cache Maven, Docker du runner Ubuntu, `./mvnw --batch-mode --no-transfer-progress verify`, rapports de tests conservés. Wrapper rendu exécutable. Exécutions GitHub Actions réussies sur `main` |
-| 0.5 | Module `common` : format d'erreur unique + `@RestControllerAdvice` (400/401/403/404/409) | [ ] | | |
+| 0.5 | Module `common` : format d'erreur unique + `@RestControllerAdvice` (400/401/403/404/409) | [~] | Nazim | Commencé le 02/10/2026, avant 2.1 qui en a besoin |
 | 0.6 | Swagger / springdoc | [ ] | | Dépendance à ajouter (prévue dans la stack) |
 
 ## Phase 1 : schéma de base (Flyway)
