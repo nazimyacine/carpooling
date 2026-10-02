@@ -7,8 +7,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 ## Où on en est
 
-- **Dernière étape faite** : 0.2 (configuration de la base écrite, démarrage pas encore vérifié)
-- **Prochaine étape** : vérifier le démarrage avec Docker (0.2), puis 1.1 (schéma Flyway)
+- **Dernière étape faite** : 0.2 (démarrage vérifié en local le 02/10/2026 : PostgreSQL 16 healthy, Spring Boot démarré, réponse HTTP 401 attendue avec Spring Security)
+- **Prochaine étape** : 1.1 (schéma Flyway : les 7 tables et leurs contraintes)
 - **Points bloquants** : aucun
 
 ## Phase 0 : socle technique
@@ -16,7 +16,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
 | 0.1 | Squelette Spring Boot 3.5.16 (Maven wrapper, Lombok, package `fr.esilv.poolup`) | [x] | Nazim | Compile. Initializr ne propose plus Boot 3 : `pom.xml` écrit à la main |
-| 0.2 | `application.properties` (connexion base, Flyway, `ddl-auto=validate`, UTC) | [~] | Nazim | À vérifier : `docker compose up -d` puis `.\mvnw.cmd spring-boot:run` |
+| 0.2 | `application.properties` (connexion base, Flyway, `ddl-auto=validate`, UTC) | [~] | Nazim | Démarrage local validé le 02/10/2026 avec `docker compose up -d` et `.\mvnw.cmd spring-boot:run` : PostgreSQL healthy, application démarrée, HTTP 401 attendu. Validation CI en attente de 0.4 ; aucune migration ni entité à vérifier pour l'instant |
 | 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [ ] | | Réécrire `TestcontainersConfiguration` pour Testcontainers 1.x (Boot 3.5), image `postgres:16` |
 | 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [ ] | | |
 | 0.5 | Module `common` : format d'erreur unique + `@RestControllerAdvice` (400/401/403/404/409) | [ ] | | |
