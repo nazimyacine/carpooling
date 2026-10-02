@@ -43,6 +43,13 @@ class PoolupApplicationTests {
     }
 
     @Test
+    void citiesAreLoadedByFlyway() {
+        assertThat(jdbcTemplate.queryForList("SELECT name FROM cities", String.class))
+                .contains("Paris", "La Défense", "Lille", "Lyon", "Rouen")
+                .doesNotHaveDuplicates();
+    }
+
+    @Test
     void schemaConstraintsRejectInvalidData() throws Exception {
         String sql = new ClassPathResource("db/schema_assertions.sql")
                 .getContentAsString(StandardCharsets.UTF_8);

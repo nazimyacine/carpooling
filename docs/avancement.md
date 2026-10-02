@@ -7,9 +7,9 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 ## Où on en est
 
-- **Dernières étapes implémentées** : 0.3 et 0.4 (tests PostgreSQL 16 et CI GitHub Actions ajoutés le 02/10/2026 ; exécution à valider)
-- **Prochaine étape** : 1.2 (liste des villes avec coordonnées dans `V2__cities.sql`)
-- **Points bloquants** : Java 21 et Docker absents de l'environnement de travail du 02/10/2026 ; tests locaux non exécutés. Les commits des étapes 0.3/0.4 sont désormais présents sur `origin/main` ; résultat de la CI non vérifié
+- **Dernière étape terminée** : 1.2 (48 villes chargées par `V2__cities.sql`, `mvnw verify` réussi en local le 02/10/2026 : 3 tests)
+- **Prochaine étape** : 1.3 (jeu de données de démo, séparé des scripts de schéma)
+- **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
 
@@ -27,7 +27,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
 | 1.1 | `V1__schema.sql` : les 7 tables et toutes les contraintes du CLAUDE.md | [~] | Équipe | Migration V1 appliquée sur PostgreSQL 16, démarrage Spring Boot et `mvnw verify` réussis. Script SQL : 25 refus attendus et cas valides vérifiés ; automatisation Testcontainers (0.3) et workflow CI (0.4) ajoutés ; résultat de la CI à confirmer |
-| 1.2 | `V2__cities.sql` : liste des villes avec coordonnées | [ ] | | |
+| 1.2 | `V2__cities.sql` : liste des villes avec coordonnées | [x] | Etienne | 48 villes (grandes villes françaises + Île-de-France, dont « La Défense » comme dans les maquettes). Ajoute la contrainte `uq_cities_name` (nom unique, sinon la liste déroulante serait ambiguë). Test `citiesAreLoadedByFlyway` + contrôle d'unicité dans `schema_assertions.sql`. `mvnw verify` réussi en local |
 | 1.3 | Jeu de données de démo, séparé des scripts de schéma | [ ] | | Mieux après les modules auth + trips |
 
 ### Vérification du schéma (1.1)
@@ -41,6 +41,14 @@ Get-Content -Raw -Encoding UTF8 backend/src/test/resources/db/schema_assertions.
 ```
 
 Cette vérification SQL est aussi exécutée automatiquement par `PoolupApplicationTests.schemaConstraintsRejectInvalidData` lors de `cd backend && ./mvnw verify`, sur un conteneur PostgreSQL 16 isolé. Java 21 et Docker doivent être disponibles ; aucun démarrage préalable de Docker Compose n'est nécessaire. Les contrôles métier entre plusieurs tables (participants, droits, trajet terminé) restent à implémenter dans les services. `reports.target_id` n'a pas de clé étrangère car la table cible dépend de `target_type` ; le service admin devra vérifier la cible.
+
+### Lancer les tests sans Java 21
+
+Docker Desktop doit tourner. Depuis `backend/`, en Git Bash : le JDK 21 est fourni par un conteneur, Testcontainers utilise le Docker de la machine.
+
+```bash
+MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock -v "$(pwd -W):/app" -v poolup-m2:/root/.m2 -w /app -e TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal eclipse-temurin:21-jdk sh ./mvnw -B -ntp verify
+```
 
 ## Phase 2 : comptes
 

@@ -1,4 +1,4 @@
--- Run after Flyway V1 with psql -v ON_ERROR_STOP=1. All fixtures are rolled back.
+-- Run after the Flyway migrations with psql -v ON_ERROR_STOP=1. All fixtures are rolled back.
 BEGIN;
 
 CREATE FUNCTION pg_temp.assert_rejected(statement TEXT, expected_state TEXT, expected_constraint TEXT)
@@ -42,6 +42,7 @@ SELECT pg_temp.assert_rejected($q$UPDATE users SET role = 'DRIVER' WHERE id = -1
 SELECT pg_temp.assert_rejected($q$UPDATE users SET status = 'UNKNOWN' WHERE id = -101$q$, '23514', 'ck_users_status');
 SELECT pg_temp.assert_rejected($q$UPDATE cities SET latitude = 91 WHERE id = -101$q$, '23514', 'ck_cities_latitude');
 SELECT pg_temp.assert_rejected($q$UPDATE cities SET longitude = -181 WHERE id = -101$q$, '23514', 'ck_cities_longitude');
+SELECT pg_temp.assert_rejected($q$UPDATE cities SET name = 'Test departure' WHERE id = -102$q$, '23505', 'uq_cities_name');
 SELECT pg_temp.assert_rejected($q$UPDATE trips SET seats_total = 0, seats_available = 0 WHERE id = -101$q$, '23514', 'ck_trips_seats_total');
 SELECT pg_temp.assert_rejected($q$UPDATE trips SET seats_total = 9 WHERE id = -101$q$, '23514', 'ck_trips_seats_total');
 SELECT pg_temp.assert_rejected($q$UPDATE trips SET seats_available = -1 WHERE id = -101$q$, '23514', 'ck_trips_seats_available');
