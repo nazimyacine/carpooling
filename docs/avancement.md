@@ -2,14 +2,14 @@
 
 Plan général du projet, étape par étape. **Ce fichier est la mémoire commune de l'équipe** : on le lit après chaque `git pull` pour savoir où on en est, et on le met à jour dans le même commit que le travail qu'il décrit.
 
-Légende : `[x]` terminé (au sens de la « Définition de terminé » du CLAUDE.md), `[~]` en cours ou partiellement vérifié, `[ ]` à faire.
+Légende : `[x]` travail réalisé (les validations restantes sont précisées dans les notes), `[~]` en cours, `[ ]` à faire. La livraison complète au sens du CLAUDE.md exige aussi la réussite des tests locaux et de la CI.
 Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux personnes ne fassent pas la même chose.
 
 ## Où on en est
 
 - **Dernières étapes implémentées** : 0.3 et 0.4 (tests PostgreSQL 16 et CI GitHub Actions ajoutés le 02/10/2026 ; exécution à valider)
 - **Prochaine étape** : 1.2 (liste des villes avec coordonnées dans `V2__cities.sql`)
-- **Points bloquants** : Java 21 et Docker absents de l'environnement de travail du 02/10/2026 ; tests locaux non exécutés. Push des étapes 0.3/0.4 refusé par GitHub (`Invalid username or token`) : commits conservés localement, authentification à rétablir avant publication et validation CI
+- **Points bloquants** : Java 21 et Docker absents de l'environnement de travail du 02/10/2026 ; tests locaux non exécutés. Les commits des étapes 0.3/0.4 sont désormais présents sur `origin/main` ; résultat de la CI non vérifié
 
 ## Phase 0 : socle technique
 
@@ -17,8 +17,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 |-----|-------|------|-----|-------|
 | 0.1 | Squelette Spring Boot 3.5.16 (Maven wrapper, Lombok, package `fr.esilv.poolup`) | [x] | Nazim | Compile. Initializr ne propose plus Boot 3 : `pom.xml` écrit à la main |
 | 0.2 | `application.properties` (connexion base, Flyway, `ddl-auto=validate`, UTC) | [~] | Nazim | Démarrage local validé le 02/10/2026 avec `docker compose up -d` et `.\mvnw.cmd spring-boot:run` : PostgreSQL healthy, application démarrée, HTTP 401 attendu. Validation CI en attente de 0.4 ; aucune migration ni entité à vérifier pour l'instant |
-| 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [~] | Équipe | Configuration Testcontainers 1.x avec `postgres:16` et `@ServiceConnection`. Deux tests : contexte + migrations Flyway + 7 tables, puis contraintes via le script SQL existant. `mvnw verify` bloqué localement : Java et Docker absents ; validation CI attendue |
-| 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [~] | Équipe | Workflow `backend-ci.yml` sur chaque push et pull request : Java 21 Temurin, cache Maven, Docker du runner Ubuntu, `./mvnw --batch-mode --no-transfer-progress verify`, rapports de tests conservés. Wrapper rendu exécutable. YAML et `git diff --check` validés ; première exécution GitHub Actions à confirmer |
+| 0.3 | Test d'intégration de base avec Testcontainers (le contexte démarre sur un vrai PostgreSQL) | [x] | Équipe | Configuration Testcontainers 1.x avec `postgres:16` et `@ServiceConnection`. Deux tests : contexte + migrations Flyway + 7 tables, puis contraintes via le script SQL existant. `mvnw verify` bloqué localement : Java et Docker absents ; validation CI attendue |
+| 0.4 | CI GitHub Actions : `./mvnw verify` à chaque push | [x] | Équipe | Workflow `backend-ci.yml` sur chaque push et pull request : Java 21 Temurin, cache Maven, Docker du runner Ubuntu, `./mvnw --batch-mode --no-transfer-progress verify`, rapports de tests conservés. Wrapper rendu exécutable. YAML et `git diff --check` validés ; première exécution GitHub Actions à confirmer |
 | 0.5 | Module `common` : format d'erreur unique + `@RestControllerAdvice` (400/401/403/404/409) | [ ] | | |
 | 0.6 | Swagger / springdoc | [ ] | | Dépendance à ajouter (prévue dans la stack) |
 
@@ -26,7 +26,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
-| 1.1 | `V1__schema.sql` : les 7 tables et toutes les contraintes du CLAUDE.md | [~] | Équipe | Migration V1 appliquée sur PostgreSQL 16, démarrage Spring Boot et `mvnw verify` réussis. Script SQL : 25 refus attendus et cas valides vérifiés ; automatisation Testcontainers (0.3) et CI (0.4) restantes |
+| 1.1 | `V1__schema.sql` : les 7 tables et toutes les contraintes du CLAUDE.md | [~] | Équipe | Migration V1 appliquée sur PostgreSQL 16, démarrage Spring Boot et `mvnw verify` réussis. Script SQL : 25 refus attendus et cas valides vérifiés ; automatisation Testcontainers (0.3) et workflow CI (0.4) ajoutés ; résultat de la CI à confirmer |
 | 1.2 | `V2__cities.sql` : liste des villes avec coordonnées | [ ] | | |
 | 1.3 | Jeu de données de démo, séparé des scripts de schéma | [ ] | | Mieux après les modules auth + trips |
 
