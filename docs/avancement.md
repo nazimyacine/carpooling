@@ -7,8 +7,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 ## Où on en est
 
-- **Dernière étape terminée** : 1.2 (48 villes chargées par `V2__cities.sql`, `mvnw verify` réussi en local le 02/10/2026 : 3 tests)
-- **Prochaine étape** : 1.3 (jeu de données de démo, séparé des scripts de schéma)
+- **Dernières étapes terminées** : 1.2 (48 villes, `V2__cities.sql`) et 1.3 (données de démo, profil `demo`). `mvnw verify` réussi en local le 02/10/2026 : 11 tests
+- **Prochaine étape** : 0.5 (format d'erreur commun) et 0.6 (Swagger), puis 2.1 (`auth`)
 - **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
@@ -28,7 +28,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 |-----|-------|------|-----|-------|
 | 1.1 | `V1__schema.sql` : les 7 tables et toutes les contraintes du CLAUDE.md | [~] | Équipe | Migration V1 appliquée sur PostgreSQL 16, démarrage Spring Boot et `mvnw verify` réussis. Script SQL : 25 refus attendus et cas valides vérifiés ; automatisation Testcontainers (0.3) et workflow CI (0.4) ajoutés ; résultat de la CI à confirmer |
 | 1.2 | `V2__cities.sql` : liste des villes avec coordonnées | [x] | Etienne | 48 villes (grandes villes françaises + Île-de-France, dont « La Défense » comme dans les maquettes). Ajoute la contrainte `uq_cities_name` (nom unique, sinon la liste déroulante serait ambiguë). Test `citiesAreLoadedByFlyway` + contrôle d'unicité dans `schema_assertions.sql`. `mvnw verify` réussi en local |
-| 1.3 | Jeu de données de démo, séparé des scripts de schéma | [ ] | | Mieux après les modules auth + trips |
+| 1.3 | Jeu de données de démo, séparé des scripts de schéma | [x] | Etienne | `db/demo/R__demo_data.sql`, chargé seulement avec le profil `demo` (voir ci-dessous). Personnages et trajets des maquettes, dates relatives au jour du chargement. Test `DemoDataTests` : cohérence avec les règles 1, 2, 5, 6, 7, mot de passe BCrypt, rechargement sans doublon. **Si le schéma évolue (nouvelle colonne obligatoire…), mettre ce script à jour dans le même commit** |
 
 ### Vérification du schéma (1.1)
 
@@ -41,6 +41,17 @@ Get-Content -Raw -Encoding UTF8 backend/src/test/resources/db/schema_assertions.
 ```
 
 Cette vérification SQL est aussi exécutée automatiquement par `PoolupApplicationTests.schemaConstraintsRejectInvalidData` lors de `cd backend && ./mvnw verify`, sur un conteneur PostgreSQL 16 isolé. Java 21 et Docker doivent être disponibles ; aucun démarrage préalable de Docker Compose n'est nécessaire. Les contrôles métier entre plusieurs tables (participants, droits, trajet terminé) restent à implémenter dans les services. `reports.target_id` n'a pas de clé étrangère car la table cible dépend de `target_type` ; le service admin devra vérifier la cible.
+
+### Données de démo (1.3)
+
+```bash
+cd backend && ./mvnw spring-boot:run -Dspring-boot.run.profiles=demo
+```
+
+- Comptes : `admin@demo.poolup.fr` (ADMIN), `karim@`, `ines@`, `hugo@`, `sofia@`, `camille@` (conducteurs), `lea@`, `theo@`, `paul@`, `max@` (passagers), `nina@` (suspendue), tous en `@demo.poolup.fr`, mot de passe `demo1234`.
+- Le script est une migration Flyway **répétable** (`R__`) : elle passe après les scripts de schéma et est rejouée à chaque modification du fichier. Elle supprime d'abord les anciens comptes `@demo.poolup.fr` et tout ce qui leur est lié, puis recrée les données ; le reste de la base n'est pas touché.
+- Les dates sont calculées au moment du chargement : pour « rafraîchir » la démo (trajets à venir redevenus passés), modifier le script ou repartir d'une base vide (`docker compose down -v`, qui efface **toute** la base locale).
+- `application.properties` contient `spring.flyway.ignore-migration-patterns=*:future,repeatable:missing` pour que l'application démarre aussi sans le profil `demo` sur une base où la démo a été chargée.
 
 ### Lancer les tests sans Java 21
 
