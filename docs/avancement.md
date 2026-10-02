@@ -9,7 +9,7 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 - **Phases 0 et 1** : tout est terminé sauf 0.6 (Swagger)
 - **Dernières étapes terminées** : 3.3 et 3.4 (`bookings`, Nazim) le 02/10/2026, `mvnw verify` local vert (68 tests)
-- **Prochaine étape** : 3.5 (`chat`), 3.6 (`ratings`), 3.7 (`admin`) et 0.6 (Swagger), toutes libres
+- **En cours** : 3.7 (`admin`, Etienne). Disponible : 0.6 (Swagger)
 - **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
@@ -90,7 +90,7 @@ MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock
 | 3.4 | `bookings` : test de concurrence (1 place, 2 réservations parallèles : 201 + 409) | [x] | Nazim | Test clé pour le jury. `BookingConcurrencyTests` : vrai serveur HTTP, requêtes lancées au même instant depuis plusieurs threads, état final vérifié en base. (1) 1 place, 2 passagers : 201 + 409, trajet `FULL`, rejoué 10 fois ; (2) 3 places, 10 passagers : exactement 3 × 201 et 7 × 409 ; (3) double clic du même passager : 1 réservation, places décomptées une seule fois (rejoué 10 fois). Contre-vérifié : avec une version « lire puis écrire » du décompte, le test échoue (deux 201) |
 | 3.5 | `chat` : messages REST + WebSocket STOMP, accès réservé (règle 5, aussi sur le WebSocket) | [x] | Baptiste | `GET/POST /api/trips/{tripId}/messages` (JWT requis), accès autorisé au conducteur et aux passagers confirmés ; WebSocket STOMP `/ws` + `/app/chat/{tripId}` avec diffusion sur `/topic/trips/{tripId}`. Tests d’intégration `ChatIntegrationTests` validés (8 tests passés au total sur le périmètre chat/ratings) |
 | 3.6 | `ratings` : noter après un trajet terminé (règle 7), moyenne calculée à la lecture | [x] | Baptiste | `POST /api/trips/{tripId}/ratings` + `GET /api/trips/{tripId}/ratings` + `GET /api/users/{userId}/ratings`, validation métier : trajet terminé, personne ayant voyagé avec le noté, pas de self-rate, note unique par trajet/rater/rated, moyenne calculée au moment de la lecture. Intégration validée par `RatingIntegrationTests` |
-| 3.7 | `admin` : signalements, sanctions (suspendre un compte), routes `/api/admin/**` | [ ] | | |
+| 3.7 | `admin` : signalements, sanctions (suspendre un compte), routes `/api/admin/**` | [~] | Etienne | |
 
 ## Phase 4 : front Angular
 
