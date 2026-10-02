@@ -9,8 +9,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 - **Dernières étapes terminées** : 1.2 (48 villes, `V2__cities.sql`) et 1.3 (données de démo, profil `demo`). `mvnw verify` réussi en local le 02/10/2026 : 11 tests
 - **Phases 0 et 1** : tout est terminé sauf 0.6 (Swagger)
-- **En cours** : 2.1 (`auth`), Nazim. 0.5 terminée : `mvnw verify` réussi en local le 02/10/2026, 17 tests
-- **Prochaine étape** : 0.6 (libre), puis 2.2 et 2.3
+- **Dernière étape terminée** : 2.1 (`auth`, Nazim). `mvnw verify` réussi en local le 02/10/2026 : 26 tests
+- **Prochaine étape** : 0.6 (Swagger), 2.2 (`users`) et 2.3 (`cities`), toutes libres. La phase 3 peut démarrer en parallèle (voir « Utiliser l'authentification » plus bas)
 - **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
@@ -67,9 +67,19 @@ MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock
 
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
-| 2.1 | `auth` : inscription, connexion, JWT, BCrypt, `SecurityConfig`, compte `SUSPENDED` refusé | [~] | Nazim | Commencé le 02/10/2026 |
+| 2.1 | `auth` : inscription, connexion, JWT, BCrypt, `SecurityConfig`, compte `SUSPENDED` refusé | [x] | Nazim | `POST /api/auth/register` (201, 409 si email pris), `POST /api/auth/login` (401 identifiants faux, 403 compte suspendu), `GET /api/auth/me`. JWT HS256 via Spring OAuth2 Resource Server, valable 24 h. Entité `User`, `UserRepository`, `UserResponse` créés dans `users` (à réutiliser en 2.2). Test `AuthIntegrationTests` (9 cas) |
 | 2.2 | `users` : consulter / modifier son profil et sa voiture | [ ] | | |
 | 2.3 | `cities` : endpoint de liste des villes | [ ] | | |
+
+### Utiliser l'authentification (2.1)
+
+- Le front envoie le jeton reçu au login dans l'en-tête `Authorization: Bearer <token>`. Toutes les routes demandent un jeton sauf `POST /api/auth/register`, `POST /api/auth/login` et Swagger ; `/api/admin/**` demande le rôle `ADMIN`.
+- Dans un contrôleur, l'utilisateur connecté : `@AuthenticationPrincipal Jwt jwt`, puis `Long.valueOf(jwt.getSubject())` (le sujet du jeton est l'id de l'utilisateur). Le jeton contient aussi `email` et `role`.
+- Erreurs métier dans un service : `throw ApiException.conflict("...")` (ou `badRequest`, `unauthorized`, `forbidden`, `notFound`), format commun de 0.5.
+- Tests d'intégration hors du package racine : `@Import(TestcontainersConfiguration.class)` (classe rendue `public`) ; exemple complet dans `AuthIntegrationTests` (vrais jetons, MockMvc).
+- Clé de signature : `poolup.jwt.secret` (variable `JWT_SECRET`, au moins 32 caractères ; la valeur par défaut ne sert qu'en développement). Durée : `JWT_EXPIRATION` (24 h par défaut).
+- Limite connue : un jeton déjà émis reste valable jusqu'à son expiration, même si le compte est suspendu entre-temps (à traiter si besoin en 3.7). CORS pour le front Angular à configurer en 4.1.
+- Comptes de démo (profil `demo`) : connexion avec `prenom@demo.poolup.fr` / `demo1234`.
 
 ## Phase 3 : modules métier (parallélisables une fois la phase 2 faite)
 
