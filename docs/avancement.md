@@ -9,8 +9,8 @@ Colonne « Qui » : prénom de la personne qui a pris l'étape, pour que deux pe
 
 - **Phases 0 et 1** : tout est terminé sauf 0.6 (Swagger)
 - **Dernière étape validée** : 2.3 (`cities`) : tests exécutés le 02/10/2026, `mvnw verify` local vert (32 tests)
-- **Dernière étape terminée** : 3.1 (`trips`) le 02/10/2026, `mvnw verify` local vert
-- **En cours** : 3.2 (tâche planifiée, Etienne). Disponibles : 0.6 (Swagger), 3.3 (`bookings`, l'entité `Trip` et `TripRepository` existent)
+- **Dernières étapes terminées** : 3.1 (`trips`) et 3.2 (tâche planifiée) le 02/10/2026, `mvnw verify` local vert (54 tests)
+- **Prochaine étape** : 3.3 (`bookings`) : l'entité `Trip` et `TripRepository` existent ; 0.6 (Swagger) toujours disponible
 - **Points bloquants** : aucun. Sans Java 21 installé, les tests se lancent dans un conteneur (voir « Lancer les tests sans Java 21 » plus bas)
 
 ## Phase 0 : socle technique
@@ -86,7 +86,7 @@ MSYS_NO_PATHCONV=1 docker run --rm -v //var/run/docker.sock:/var/run/docker.sock
 | #   | Étape | État | Qui | Notes |
 |-----|-------|------|-----|-------|
 | 3.1 | `trips` : publier (validation), chercher, modifier (règle 3), annuler (règle 6) | [x] | Etienne | `POST /api/trips` (201), `GET /api/trips?departureCityId=&arrivalCityId=&date=AAAA-MM-JJ&seats=` (filtres facultatifs, jour en heure de Paris, trajets OPEN/FULL pas encore partis, triés par heure de départ ; FULL inclus sauf si `seats` est donné), `GET /api/trips/{id}`, `GET /api/trips/mine` (tableau de bord conducteur, tous statuts), `PUT /api/trips/{id}` (même corps que la publication), `POST /api/trips/{id}/cancel`. Réponse `TripResponse` : villes avec coordonnées, `seatsBooked`, conducteur réduit à prénom + initiale du nom + voiture (pas d'email). 400 : date passée, villes identiques ou inconnues, places hors 1..8, prix <= 0 ; 403 : pas le conducteur ; 404 ; 409 : places déjà réservées (règle 3), trajet annulé, terminé ou déjà parti. Modifier/annuler verrouille la ligne du trajet (`SELECT ... FOR UPDATE`) : une réservation simultanée attend, aucun décompte écrasé. Annuler passe les réservations `CONFIRMED` en `CANCELLED` (+ `cancelled_at`) dans la même transaction (requête dans `TripRepository`, en attendant le module `bookings`). `TripIntegrationTests` : 19 tests verts en local |
-| 3.2 | `trips` : tâche `@Scheduled` qui passe les trajets partis à `COMPLETED` | [~] | Etienne | |
+| 3.2 | `trips` : tâche `@Scheduled` qui passe les trajets partis à `COMPLETED` | [x] | Etienne | `TripCompletionJob`, chaque nuit à 3 h heure de Paris (`poolup.trips.completion-cron`, surchargeable par `TRIPS_COMPLETION_CRON`) : une seule requête `UPDATE` passe les trajets OPEN/FULL dont l'heure de départ est passée à `COMPLETED` (ouvre les notes, règle 7). Planification activée par `common/SchedulingConfig`. Entre le départ et le passage de la tâche, un trajet ne peut déjà plus être modifié ni annulé (heure vérifiée) et n'apparaît plus dans la recherche ; **3.3 doit aussi vérifier `departure_at > now()` dans la requête de réservation**. `TripCompletionJobTests` : OPEN/FULL partis -> COMPLETED, annulés et à venir intacts, tâche rejouable, cron enregistré. 3 tests verts en local |
 | 3.3 | `bookings` : réserver en une requête atomique (règles 1 et 2), annuler (FULL -> OPEN) | [ ] | | |
 | 3.4 | `bookings` : test de concurrence (1 place, 2 réservations parallèles : 201 + 409) | [ ] | | Test clé pour le jury |
 | 3.5 | `chat` : messages REST + WebSocket STOMP, accès réservé (règle 5, aussi sur le WebSocket) | [ ] | | |
